@@ -4,12 +4,10 @@ import com.techprimers.graphql.springbootgrapqlexample.model.Book;
 import com.techprimers.graphql.springbootgrapqlexample.repository.BookRepository;
 import com.techprimers.graphql.springbootgrapqlexample.service.datafetcher.AllBooksDataFetcher;
 import com.techprimers.graphql.springbootgrapqlexample.service.datafetcher.BookDataFetcher;
+import com.techprimers.graphql.springbootgrapqlexample.service.resolver.BookMutation;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
-import graphql.schema.idl.RuntimeWiring;
-import graphql.schema.idl.SchemaGenerator;
-import graphql.schema.idl.SchemaParser;
-import graphql.schema.idl.TypeDefinitionRegistry;
+import graphql.schema.idl.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -34,6 +32,9 @@ public class GraphQLService {
     private AllBooksDataFetcher allBooksDataFetcher;
     @Autowired
     private BookDataFetcher bookDataFetcher;
+
+    @Autowired
+    private BookMutation bookMutation;
 
     // load schema at application start up
     @PostConstruct
@@ -72,10 +73,16 @@ public class GraphQLService {
     }
 
     private RuntimeWiring buildRuntimeWiring() {
-        return RuntimeWiring.newRuntimeWiring()
+       /* return RuntimeWiring.newRuntimeWiring()
                 .type("Query", typeWiring -> typeWiring
                         .dataFetcher("allBooks", allBooksDataFetcher)
                         .dataFetcher("book", bookDataFetcher))
+                .build();*/
+
+        return RuntimeWiring.newRuntimeWiring()
+                .type(TypeRuntimeWiring.newTypeWiring("Query").dataFetcher("allBooks", allBooksDataFetcher))
+                .type(TypeRuntimeWiring.newTypeWiring("Query").dataFetcher("book", bookDataFetcher))
+                .type(TypeRuntimeWiring.newTypeWiring("Mutation").dataFetcher("createBook", bookMutation))
                 .build();
     }
 
